@@ -5,9 +5,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 
 import com.clover.sdk.util.CloverAccount;
-import com.clover.sdk.v1.printer.job.ImagePrintJob;
 import com.clover.sdk.v1.printer.job.ImagePrintJob2;
-import com.clover.sdk.v1.printer.job.PrintJob;
 import com.clover.sdk.v1.printer.job.TextPrintJob;
 
 public class CloverPrinter {
@@ -46,6 +44,12 @@ public class CloverPrinter {
             throw new IllegalArgumentException("Failed to decode bitmap from bytes");
         }
 
+        // Validate bitmap height (Clover SDK maximum is 2048 pixels)
+        if (bitmap.getHeight() > ImagePrintJob2.MAX_HEIGHT) {
+            bitmap.recycle();
+            throw new IllegalArgumentException("Bitmap height cannot be greater than " + ImagePrintJob2.MAX_HEIGHT + " pixels");
+        }
+
         // Convert to ARGB_8888 for better compatibility with Clover printers
         Bitmap compatibleBitmap = bitmap.copy(Bitmap.Config.ARGB_8888, false);
 
@@ -54,12 +58,15 @@ public class CloverPrinter {
             bitmap.recycle();
         }
 
-        PrintJob imagePrintJob2 = new ImagePrintJob.Builder()
-                .bitmap(compatibleBitmap)
-                .build();
+        // Execute bitmap processing and printing on background thread
+        // as recommended by Clover SDK (Builder methods perform blocking I/O)
+        final Bitmap finalBitmap = compatibleBitmap;
+        new Thread(() -> {
+            ImagePrintJob2 imagePrintJob = new ImagePrintJob2.Builder(context)
+                    .bitmap(finalBitmap)
+                    .build();
 
-        imagePrintJob2.print(context, CloverAccount.getAccount(this.context));
-
-        // Bitmap will be recycled by the print job when done
+            imagePrintJob.print(context, CloverAccount.getAccount(context));
+        }).start();
     }
 }
