@@ -1,8 +1,13 @@
 package com.elsistemas.cloverprintersdk;
 
-import android.accounts.Account;
-import android.accounts.AccountManager;
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+
+import com.clover.sdk.util.CloverAccount;
+import com.clover.sdk.v1.printer.job.ImagePrintJob;
+import com.clover.sdk.v1.printer.job.ImagePrintJob2;
+import com.clover.sdk.v1.printer.job.PrintJob;
 import com.clover.sdk.v1.printer.job.TextPrintJob;
 
 public class CloverPrinter {
@@ -18,25 +23,43 @@ public class CloverPrinter {
         this.context = context;
     }
 
-    public void printText(byte[] text) {
+    public void printText(String text) {
         if (text == null ) {
             throw new IllegalArgumentException("Text cannot be null");
         }
 
-        Account cloverAccount = getCloverAccount(context);
-
-        String value = new String(text);
-
-        TextPrintJob printJob = new TextPrintJob.Builder()
-                .text(value)
+        TextPrintJob textPrintJob = new TextPrintJob.Builder()
+                .text(text)
                 .build();
 
-        printJob.print(context, cloverAccount);
+        textPrintJob.print(context, CloverAccount.getAccount(this.context));
     }
 
-    private static Account getCloverAccount(Context context) {
-        AccountManager accountManager = AccountManager.get(context);
-        Account[] accounts = accountManager.getAccountsByType(CLOVER_ACCOUNT_TYPE);
-        return accounts.length > 0 ? accounts[0] : null;
+    public void printImage(byte[] bytes) {
+        if (bytes == null ) {
+            throw new IllegalArgumentException("Bytes cannot be null");
+        }
+
+        Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+
+        if (bitmap == null) {
+            throw new IllegalArgumentException("Failed to decode bitmap from bytes");
+        }
+
+        // Convert to ARGB_8888 for better compatibility with Clover printers
+        Bitmap compatibleBitmap = bitmap.copy(Bitmap.Config.ARGB_8888, false);
+
+        // Recycle original bitmap if it's a different instance
+        if (compatibleBitmap != bitmap) {
+            bitmap.recycle();
+        }
+
+        PrintJob imagePrintJob2 = new ImagePrintJob.Builder()
+                .bitmap(compatibleBitmap)
+                .build();
+
+        imagePrintJob2.print(context, CloverAccount.getAccount(this.context));
+
+        // Bitmap will be recycled by the print job when done
     }
 }

@@ -1,4 +1,4 @@
-package com.elsistemas.cloverprintersdk;
+package com.elsistemas.cloverprintersdk.sdk;
 
 import android.content.Context;
 
@@ -21,6 +21,6 @@ public class ExampleInstrumentedTest {
     public void useAppContext() {
         // Context of the app under test.
         Context appContext = InstrumentationRegistry.getInstrumentation().getTargetContext();
-        assertEquals("com.elsistemas.cloverprintersdk.test", appContext.getPackageName());
+        assertEquals("com.elsistemas.cloverprintersdk.sdk.test", appContext.getPackageName());
     }
 }

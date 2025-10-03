@@ -3,14 +3,15 @@ plugins {
 }
 
 android {
-    namespace 'com.elsistemas.cloverprintersdk'
+    namespace 'com.elsistemas.cloverprintersdk.sdk'
     compileSdk 34
 
     defaultConfig {
-        minSdk 13
+        minSdk 14
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles "consumer-rules.pro"
+        multiDexEnabled true
     }
 
     buildTypes {
@@ -31,5 +32,6 @@ dependencies {
     testImplementation libs.junit
     androidTestImplementation libs.ext.junit
     androidTestImplementation libs.espresso.core
-    api libs.clover.android.sdk
+
+    implementation(files('libs/CloverSDK.jar'))
 }

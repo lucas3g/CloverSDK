@@ -1,4 +1,4 @@
-package com.elsistemas.cloverprintersdk;
+package com.elsistemas.cloverprintersdk.sdk;
 
 import org.junit.Test;
 
